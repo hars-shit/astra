@@ -1,95 +1,84 @@
 import React, { useState } from 'react';
-import './Contact.css'; 
 import { useSelector } from 'react-redux';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import './Contact.css'; 
 
 const Contact = () => {
   const darkMode = useSelector((state) => state.theme.darkMode);  
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    address: '',
-    bio: ''
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [submittedData, setSubmittedData] = useState({});
+
+  // Yup validation schema
+  const validationSchema = Yup.object().shape({
+    name: Yup.string().required('Name is required'),
+    email: Yup.string().email('Invalid email format').required('Email is required'),
+    address: Yup.string().required('Address is required'),
+    bio: Yup.string().required('Bio is required'),
   });
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsModalOpen(true); // Open the modal on form submission
+  const handleSubmit = (values) => {
+    setSubmittedData(values);
+    setIsModalOpen(true);
   };
 
   const closeModal = () => {
-    setIsModalOpen(false); // Close the modal
+    setIsModalOpen(false); 
   };
 
   return (
-    <div className={`contact-container ${darkMode ? "dark":""}`}>
+    <div className={`contact-container ${darkMode ? "dark" : ""}`}>
       <div className="contact-image">
         <img src="https://imgs.search.brave.com/Wb21eZN4_scm25M7ZnO-XeJVjjSRLEcWOiUJE6x5dxM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9iZXN0/d3JpdGluZy5jb20v/d3AtY29udGVudC91/cGxvYWRzLzIwMjQv/MDEvZnJlZS1waG90/b3MtZm9yLWJsb2dz/LmpwZw" alt="Contact Us" />
       </div>
       <div className="contact-form">
         <h2>Contact Us</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Name:</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="email">Email:</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="address">Address:</label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="bio">Bio:</label>
-            <textarea
-              id="bio"
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              required
-            ></textarea>
-          </div>
-          <button type="submit">Send Data</button>
-        </form>
+        <Formik
+          initialValues={{
+            name: '',
+            email: '',
+            address: '',
+            bio: '',
+          }}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ isSubmitting }) => (
+            <Form>
+              <div className="form-group">
+                <label htmlFor="name">Name:</label>
+                <Field type="text" id="name" name="name" required />
+                <ErrorMessage name="name" component="div" className="error" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email:</label>
+                <Field type="email" id="email" name="email" required />
+                <ErrorMessage name="email" component="div" className="error" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="address">Address:</label>
+                <Field type="text" id="address" name="address" required />
+                <ErrorMessage name="address" component="div" className="error" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="bio">Bio:</label>
+                <Field as="textarea" id="bio" name="bio" required />
+                <ErrorMessage name="bio" component="div" className="error" />
+              </div>
+              <button type="submit" disabled={isSubmitting}>Send Data</button>
+            </Form>
+          )}
+        </Formik>
       </div>
 
-      {/* Custom Modal for displaying form data */}
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">
             <h2>Submitted Data</h2>
-            <p><strong>Name:</strong> {formData.name}</p>
-            <p><strong>Email:</strong> {formData.email}</p>
-            <p><strong>Address:</strong> {formData.address}</p>
-            <p><strong>Bio:</strong> {formData.bio}</p>
+            <p><strong>Name:</strong> {submittedData.name}</p>
+            <p><strong>Email:</strong> {submittedData.email}</p>
+            <p><strong>Address:</strong> {submittedData.address}</p>
+            <p><strong>Bio:</strong> {submittedData.bio}</p>
             <button onClick={closeModal}>Close</button>
           </div>
         </div>
